@@ -43,13 +43,14 @@ export function distanceMiles(
 }
 
 // Shared map projection — Michigan-centered geoAlbers
+// translate shifted up 40px so Detroit has breathing room at the bottom
 export function createMapProjection(width: number, height: number) {
   return geoAlbers()
     .rotate([86, 0, 0])
     .center([0, 44])
     .parallels([40, 48])
-    .scale(5200)
-    .translate([width / 2, height / 2])
+    .scale(4900)
+    .translate([width / 2, height / 2 - 40])
 }
 
 export function toSvgPoint(

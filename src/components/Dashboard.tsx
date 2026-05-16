@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import dynamic from 'next/dynamic'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { Filter, RefreshCw, Layers, Map, GitBranch } from 'lucide-react'
 import { Manufacturer, AppState, ScenarioState } from '@/types'
 import { parseScenario, applyScenario } from '@/lib/scenario'
@@ -105,31 +105,25 @@ export default function Dashboard({ manufacturers, state, onStateChange }: Props
             <span className="font-mono text-[10px] text-lc-green">{filtered.length}</span>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-2 space-y-2">
-            <AnimatePresence mode="popLayout">
-              {filtered.map((m, i) => (
-                <ManufacturerCard
-                  key={m.id}
-                  manufacturer={m}
-                  rank={i + 1}
-                  isActive={m.id === state.activeManufacturerId}
-                  onSelect={handleSelect}
-                  index={i}
-                />
-              ))}
-              {filtered.length === 0 && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="text-center py-12 text-lc-textFaint text-xs font-mono"
-                >
-                  <div className="text-2xl mb-2">∅</div>
-                  No suppliers match current filters.
-                  <br />
-                  Adjust your scenario.
-                </motion.div>
-              )}
-            </AnimatePresence>
+          <div className="flex-1 overflow-y-auto p-2 space-y-2" style={{ willChange: 'transform' }}>
+            {filtered.map((m, i) => (
+              <ManufacturerCard
+                key={m.id}
+                manufacturer={m}
+                rank={i + 1}
+                isActive={m.id === state.activeManufacturerId}
+                onSelect={handleSelect}
+                index={i}
+              />
+            ))}
+            {filtered.length === 0 && (
+              <div className="text-center py-12 text-lc-textFaint text-xs font-mono">
+                <div className="text-2xl mb-2">∅</div>
+                No suppliers match current filters.
+                <br />
+                Adjust your scenario.
+              </div>
+            )}
           </div>
         </div>
 

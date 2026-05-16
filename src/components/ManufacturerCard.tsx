@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import { motion } from 'framer-motion'
 import { MapPin, Users, TrendingUp, Droplets, Zap, Shield } from 'lucide-react'
 import { Manufacturer } from '@/types'
@@ -28,12 +29,14 @@ const CERT_COLORS: Record<string, string> = {
   social: '#a78bfa',
 }
 
-export default function ManufacturerCard({ manufacturer: m, rank, isActive, onSelect, index }: Props) {
+export default memo(function ManufacturerCard({ manufacturer: m, rank, isActive, onSelect, index }: Props) {
   return (
     <motion.div
-      initial={{ opacity: 0, x: -20 }}
+      layout
+      initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.35, delay: index * 0.07 }}
+      exit={{ opacity: 0, x: -10 }}
+      transition={{ duration: 0.2, delay: Math.min(index * 0.03, 0.15) }}
       onClick={() => onSelect(m.id)}
       className={cn(
         'relative cursor-pointer rounded-lg border transition-all duration-200 overflow-hidden',
@@ -100,12 +103,9 @@ export default function ManufacturerCard({ manufacturer: m, rank, isActive, onSe
                 <Icon className="w-2.5 h-2.5 shrink-0" style={{ color: col }} />
                 <span className="text-[10px] text-lc-textMuted w-28 shrink-0">{label}</span>
                 <div className="flex-1 h-1 bg-lc-border rounded-full overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${val}%` }}
-                    transition={{ duration: 0.8, delay: index * 0.07 + 0.3 }}
-                    className="h-full rounded-full"
-                    style={{ background: col }}
+                  <div
+                    className="h-full rounded-full score-bar-fill"
+                    style={{ background: col, width: `${val}%` }}
                   />
                 </div>
                 <span className="font-mono text-[10px] shrink-0 w-6 text-right" style={{ color: col }}>
@@ -146,4 +146,4 @@ export default function ManufacturerCard({ manufacturer: m, rank, isActive, onSe
       </div>
     </motion.div>
   )
-}
+})

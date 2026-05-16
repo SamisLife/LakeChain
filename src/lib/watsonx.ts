@@ -159,7 +159,7 @@ Respond ONLY with a JSON object:
     )
 
     if (!res.ok) throw new Error(`Watsonx error: ${res.status}`)
-    const data = await res.json()
+    const data = await res.json() as { results?: { generated_text?: string }[] }
     const text: string = data?.results?.[0]?.generated_text ?? ''
     const jsonMatch = text.match(/\{[\s\S]*\}/)
     if (jsonMatch) {
