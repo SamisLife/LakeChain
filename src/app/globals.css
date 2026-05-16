@@ -1,0 +1,83 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --lc-bg: #070d0a;
+  --lc-surface: #0c1710;
+  --lc-green: #00d97e;
+  --lc-water: #1da6e0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--lc-bg);
+  color: #e2f0e8;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: #0c1710; }
+::-webkit-scrollbar-thumb { background: #1c3a27; border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: #2d5c40; }
+
+/* Arc animations */
+.arc-path {
+  stroke-dasharray: 800;
+  stroke-dashoffset: 800;
+  animation: drawArc 1.2s ease forwards;
+}
+
+@keyframes drawArc {
+  to { stroke-dashoffset: 0; }
+}
+
+.arc-flow {
+  stroke-dasharray: 6 10;
+  animation: flowDash 1.4s linear infinite;
+}
+
+@keyframes flowDash {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: -32; }
+}
+
+/* Pulse ring */
+@keyframes pulseRing {
+  0%   { r: 6; opacity: 0.8; }
+  100% { r: 18; opacity: 0; }
+}
+
+.pulse-ring {
+  animation: pulseRing 2s ease-out infinite;
+}
+
+/* Score bar fill */
+.score-bar-fill {
+  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Scan line */
+@keyframes scanLine {
+  0%   { top: 0%; opacity: 0.6; }
+  50%  { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+.scan-line {
+  animation: scanLine 3s linear infinite;
+}
+
+/* Node pulse */
+@keyframes nodePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
