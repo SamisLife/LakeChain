@@ -1,0 +1,753 @@
+{
+  "Huron": {
+    "name": "Huron",
+    "huc8": "04090005",
+    "facilityCount": 35,
+    "highRiskCount": 8,
+    "totalRsei": 2947969992898,
+    "sensitivity": 0.55,
+    "avgScore": 53,
+    "riskLevel": "moderate",
+    "topChemicals": [
+      "Asbestos (friable) (1332-21-4)",
+      "Lead compounds (N420)",
+      "Beryllium compounds (N050)",
+      "Polychlorinated biphenyls (PCBs) (1336-36-3)",
+      "Copper compounds (N100)",
+      "Chromium compounds (N090)"
+    ]
+  },
+  "Ottawa-Stony": {
+    "name": "Ottawa-Stony",
+    "huc8": "04100001",
+    "facilityCount": 16,
+    "highRiskCount": 5,
+    "totalRsei": 661196495410,
+    "sensitivity": 0.45,
+    "avgScore": 53,
+    "riskLevel": "moderate",
+    "topChemicals": [
+      "Barium compounds (N040)",
+      "Sulfuric acid (acid aerosols) (7664-93-9)",
+      "Manganese compounds (N450)",
+      "Hydrochloric acid (acid aerosols) (7647-01-0)",
+      "Zinc compounds (N982)",
+      "Vanadium compounds (N770)"
+    ]
+  },
+  "Detroit": {
+    "name": "Detroit",
+    "huc8": "04090004",
+    "facilityCount": 107,
+    "highRiskCount": 53,
+    "totalRsei": 13020925829919,
+    "sensitivity": 0.85,
+    "avgScore": 45,
+    "riskLevel": "moderate",
+    "topChemicals": [
+      "Manganese compounds (N450)",
+      "Zinc compounds (N982)",
+      "Chromium compounds (N090)",
+      "Lead compounds (N420)",
+      "Copper compounds (N100)",
+      "Nickel compounds (N495)"
+    ]
+  },
+  "Escanaba": {
+    "name": "Escanaba",
+    "huc8": "04030110",
+    "facilityCount": 4,
+    "highRiskCount": 2,
+    "totalRsei": 3790966815,
+    "sensitivity": 0.3,
+    "avgScore": 50,
+    "riskLevel": "moderate",
+    "topChemicals": [
+      "Nickel compounds (N495)",
+      "Copper compounds (N100)",
+      "Cobalt compounds (N096)",
+      "Lead compounds (N420)",
+      "Mercury compounds (N458)",
+      "Methanol (67-56-1)"
+    ]
+  },
+  "Kalamazoo": {
+    "name": "Kalamazoo",
+    "huc8": "04050003",
+    "facilityCount": 56,
+    "highRiskCount": 26,
+    "totalRsei": 441077592601,
+    "sensitivity": 0.85,
+    "avgScore": 44,
+    "riskLevel": "high",
+    "topChemicals": [
+      "Nitrate compounds (water dissociable) (N511)",
+      "Ammonia (7664-41-7)",
+      "Peracetic acid (79-21-0)",
+      "Manganese compounds (N450)",
+      "Copper (7440-50-8)",
+      "Chromium compounds (N090)"
+    ]
+  },
+  "Black-Macatawa": {
+    "name": "Black-Macatawa",
+    "huc8": "04050002",
+    "facilityCount": 35,
+    "highRiskCount": 16,
+    "totalRsei": 4021114124899,
+    "sensitivity": 0.65,
+    "avgScore": 46,
+    "riskLevel": "moderate",
+    "topChemicals": [
+      "Barium compounds (N040)",
+      "Vanadium compounds (N770)",
+      "Ammonia (7664-41-7)",
+      "Manganese compounds (N450)",
+      "Copper compounds (N100)",
+      "Zinc compounds (N982)"
+    ]
+  },
+  "Pere Marquette-White": {
+    "name": "Pere Marquette-White",
+    "huc8": "04060101",
+    "facilityCount": 25,
+    "highRiskCount": 8,
+    "totalRsei": 93544742704,
+    "sensitivity": 0.22,
+    "avgScore": 49,
+    "riskLevel": "moderate",
+    "topChemicals": [
+      "Aluminum (fume or dust) (7429-90-5)",
+      "Copper (7440-50-8)",
+      "Manganese (7439-96-5)",
+      "Nickel (7440-02-0)",
+      "Lead compounds (N420)",
+      "Hydrogen fluoride (7664-39-3)"
+    ]
+  },
+  "Raisin": {
+    "name": "Raisin",
+    "huc8": "04100002",
+    "facilityCount": 14,
+    "highRiskCount": 6,
+    "totalRsei": 14660434402,
+    "sensitivity": 0.75,
+    "avgScore": 48,
+    "riskLevel": "moderate",
+    "topChemicals": [
+      "Manganese (7439-96-5)",
+      "Ammonia (7664-41-7)",
+      "Xylene (mixed isomers) (1330-20-7)",
+      "Toluene (108-88-3)",
+      "Diisocyanates (N120)",
+      "Methyl methacrylate (80-62-6)"
+    ]
+  },
+  "Clinton": {
+    "name": "Clinton",
+    "huc8": "04090003",
+    "facilityCount": 91,
+    "highRiskCount": 35,
+    "totalRsei": 915668460354,
+    "sensitivity": 0.7,
+    "avgScore": 49,
+    "riskLevel": "moderate",
+    "topChemicals": [
+      "Zinc compounds (N982)",
+      "Nitrate compounds (water dissociable) (N511)",
+      "Nickel compounds (N495)",
+      "Copper (7440-50-8)",
+      "Manganese (7439-96-5)",
+      "Chromium compounds (N090)"
+    ]
+  },
+  "St. Clair": {
+    "name": "St. Clair",
+    "huc8": "04090001",
+    "facilityCount": 20,
+    "highRiskCount": 10,
+    "totalRsei": 20595129286,
+    "sensitivity": 0.65,
+    "avgScore": 46,
+    "riskLevel": "moderate",
+    "topChemicals": [
+      "Toluene (108-88-3)",
+      "Zinc compounds (N982)",
+      "Barium compounds (N040)",
+      "Vanadium compounds (N770)",
+      "Hydrochloric acid (acid aerosols) (7647-01-0)",
+      "Sulfuric acid (acid aerosols) (7664-93-9)"
+    ]
+  },
+  "Lower Grand": {
+    "name": "Lower Grand",
+    "huc8": "04050006",
+    "facilityCount": 81,
+    "highRiskCount": 22,
+    "totalRsei": 697202170434,
+    "sensitivity": 0.52,
+    "avgScore": 52,
+    "riskLevel": "moderate",
+    "topChemicals": [
+      "Diisocyanates (N120)",
+      "Toluene (108-88-3)",
+      "Nitrate compounds (water dissociable) (N511)",
+      "Sodium nitrite (7632-00-0)",
+      "Nickel compounds (N495)",
+      "Chromium compounds (N090)"
+    ]
+  },
+  "Keweenaw Peninsula": {
+    "name": "Keweenaw Peninsula",
+    "huc8": "04020103",
+    "facilityCount": 3,
+    "highRiskCount": 2,
+    "totalRsei": 991071445,
+    "sensitivity": 0.35,
+    "avgScore": 42,
+    "riskLevel": "high",
+    "topChemicals": [
+      "Ammonia (7664-41-7)",
+      "Copper compounds (N100)",
+      "Lead compounds (N420)",
+      "Styrene (100-42-5)",
+      "Copper (7440-50-8)",
+      "Nickel (7440-02-0)"
+    ]
+  },
+  "St. Joseph": {
+    "name": "St. Joseph",
+    "huc8": "04050001",
+    "facilityCount": 56,
+    "highRiskCount": 16,
+    "totalRsei": 35033411835,
+    "sensitivity": 0.5,
+    "avgScore": 53,
+    "riskLevel": "moderate",
+    "topChemicals": [
+      "Aluminum (fume or dust) (7429-90-5)",
+      "Hydrochloric acid (acid aerosols) (7647-01-0)",
+      "Copper compounds (N100)",
+      "Zinc compounds (N982)",
+      "Lead compounds (N420)",
+      "Dioxin and dioxin-like compounds (N150)"
+    ]
+  },
+  "Flint": {
+    "name": "Flint",
+    "huc8": "04080204",
+    "facilityCount": 15,
+    "highRiskCount": 7,
+    "totalRsei": 242999615232,
+    "sensitivity": 0.9,
+    "avgScore": 45,
+    "riskLevel": "moderate",
+    "topChemicals": [
+      "Certain glycol ethers (N230)",
+      "N-Methyl-2-pyrrolidone (872-50-4)",
+      "n-Butyl alcohol (71-36-3)",
+      "Zinc (fume or dust) (7440-66-6)",
+      "Xylene (mixed isomers) (1330-20-7)",
+      "Methyl isobutyl ketone (108-10-1)"
+    ]
+  },
+  "Muskegon": {
+    "name": "Muskegon",
+    "huc8": "04060102",
+    "facilityCount": 27,
+    "highRiskCount": 7,
+    "totalRsei": 735108903136,
+    "sensitivity": 0.5,
+    "avgScore": 52,
+    "riskLevel": "moderate",
+    "topChemicals": [
+      "4,4'-Isopropylidenediphenol (80-05-7)",
+      "Zinc compounds (N982)",
+      "Xylene (mixed isomers) (1330-20-7)",
+      "Methyl isobutyl ketone (108-10-1)",
+      "Ethylbenzene (100-41-4)",
+      "Toluene (108-88-3)"
+    ]
+  },
+  "Birch-Willow": {
+    "name": "Birch-Willow",
+    "huc8": "04080104",
+    "facilityCount": 2,
+    "highRiskCount": 1,
+    "totalRsei": 1314595,
+    "sensitivity": 0.3,
+    "avgScore": 42,
+    "riskLevel": "high",
+    "topChemicals": [
+      "Formic acid (64-18-6)",
+      "Ammonia (7664-41-7)",
+      "Methanol (67-56-1)",
+      "1,2,4-Trimethylbenzene (95-63-6)",
+      "Hydrochloric acid (acid aerosols) (7647-01-0)"
+    ]
+  },
+  "Manistee": {
+    "name": "Manistee",
+    "huc8": "04060103",
+    "facilityCount": 7,
+    "highRiskCount": 3,
+    "totalRsei": 3543621916,
+    "sensitivity": 0.35,
+    "avgScore": 46,
+    "riskLevel": "moderate",
+    "topChemicals": [
+      "Zinc compounds (N982)",
+      "Methanol (67-56-1)",
+      "Nitrate compounds (water dissociable) (N511)",
+      "Manganese (7439-96-5)",
+      "Acetaldehyde (75-07-0)",
+      "Phenol (108-95-2)"
+    ]
+  },
+  "Saginaw": {
+    "name": "Saginaw",
+    "huc8": "04080206",
+    "facilityCount": 13,
+    "highRiskCount": 8,
+    "totalRsei": 10997335627,
+    "sensitivity": 0.75,
+    "avgScore": 41,
+    "riskLevel": "high",
+    "topChemicals": [
+      "Ammonia (7664-41-7)",
+      "Peracetic acid (79-21-0)",
+      "Ethylene glycol (107-21-1)",
+      "Polycyclic aromatic compounds (N590)",
+      "Benzo[g,h,i]perylene (191-24-2)",
+      "Zinc compounds (N982)"
+    ]
+  },
+  "Tittabawassee": {
+    "name": "Tittabawassee",
+    "huc8": "04080201",
+    "facilityCount": 9,
+    "highRiskCount": 7,
+    "totalRsei": 881300419234,
+    "sensitivity": 0.95,
+    "avgScore": 34,
+    "riskLevel": "high",
+    "topChemicals": [
+      "Manganese compounds (N450)",
+      "Hydrochloric acid (acid aerosols) (7647-01-0)",
+      "Ammonia (7664-41-7)",
+      "Methanol (67-56-1)",
+      "Acetonitrile (75-05-8)",
+      "Chloroacetic acid (79-11-8)"
+    ]
+  },
+  "Shiawassee": {
+    "name": "Shiawassee",
+    "huc8": "04080203",
+    "facilityCount": 15,
+    "highRiskCount": 7,
+    "totalRsei": 218648509137,
+    "sensitivity": 0.55,
+    "avgScore": 50,
+    "riskLevel": "moderate",
+    "topChemicals": [
+      "n-Hexane (110-54-3)",
+      "Nitrate compounds (water dissociable) (N511)",
+      "Hydrochloric acid (acid aerosols) (7647-01-0)",
+      "Hydrogen fluoride (7664-39-3)",
+      "Nitric acid (7697-37-2)",
+      "Chromium compounds (N090)"
+    ]
+  },
+  "Boardman-Charlevoix": {
+    "name": "Boardman-Charlevoix",
+    "huc8": "04060105",
+    "facilityCount": 11,
+    "highRiskCount": 4,
+    "totalRsei": 9470919756,
+    "sensitivity": 0.32,
+    "avgScore": 52,
+    "riskLevel": "moderate",
+    "topChemicals": [
+      "Barium compounds (N040)",
+      "Sodium nitrite (7632-00-0)",
+      "Toluene (108-88-3)",
+      "Methanol (67-56-1)",
+      "Benzene (71-43-2)",
+      "Ammonia (7664-41-7)"
+    ]
+  },
+  "Pigeon-Wiscoggin": {
+    "name": "Pigeon-Wiscoggin",
+    "huc8": "04080103",
+    "facilityCount": 6,
+    "highRiskCount": 3,
+    "totalRsei": 3679356740,
+    "sensitivity": 0.32,
+    "avgScore": 52,
+    "riskLevel": "moderate",
+    "topChemicals": [
+      "Manganese compounds (N450)",
+      "Chromium (7440-47-3)",
+      "Nickel (7440-02-0)",
+      "Furan (110-00-9)",
+      "Ammonia (7664-41-7)",
+      "Lead compounds (N420)"
+    ]
+  },
+  "Menominee": {
+    "name": "Menominee",
+    "huc8": "04030108",
+    "facilityCount": 7,
+    "highRiskCount": 3,
+    "totalRsei": 5361218837,
+    "sensitivity": 0.35,
+    "avgScore": 50,
+    "riskLevel": "moderate",
+    "topChemicals": [
+      "Manganese compounds (N450)",
+      "Methanol (67-56-1)",
+      "Ammonia (7664-41-7)",
+      "Hydrogen sulfide (2148878)",
+      "Zinc compounds (N982)",
+      "Formaldehyde (50-00-0)"
+    ]
+  },
+  "Dead-Kelsey": {
+    "name": "Dead-Kelsey",
+    "huc8": "04020105",
+    "facilityCount": 2,
+    "highRiskCount": 1,
+    "totalRsei": 2926789227,
+    "sensitivity": 0.35,
+    "avgScore": 51,
+    "riskLevel": "moderate",
+    "topChemicals": [
+      "Nickel compounds (N495)",
+      "Copper compounds (N100)",
+      "Lead compounds (N420)",
+      "Cobalt compounds (N096)",
+      "Mercury compounds (N458)",
+      "Nitrate compounds (water dissociable) (N511)"
+    ]
+  },
+  "Au Sable": {
+    "name": "Au Sable",
+    "huc8": "04070007",
+    "facilityCount": 5,
+    "highRiskCount": 2,
+    "totalRsei": 4746639678,
+    "sensitivity": 0.25,
+    "avgScore": 46,
+    "riskLevel": "moderate",
+    "topChemicals": [
+      "Methanol (67-56-1)",
+      "Formaldehyde (50-00-0)",
+      "Acetaldehyde (75-07-0)",
+      "Manganese compounds (N450)",
+      "Propionaldehyde (123-38-6)",
+      "Phenol (108-95-2)"
+    ]
+  },
+  "Betsy-Chocolay": {
+    "name": "Betsy-Chocolay",
+    "huc8": "04020201",
+    "facilityCount": 1,
+    "highRiskCount": 1,
+    "totalRsei": 11537056,
+    "sensitivity": 0.3,
+    "avgScore": 41,
+    "riskLevel": "high",
+    "topChemicals": [
+      "Ammonia (7664-41-7)",
+      "Hydrochloric acid (acid aerosols) (7647-01-0)",
+      "Lead (7439-92-1)"
+    ]
+  },
+  "Upper Grand": {
+    "name": "Upper Grand",
+    "huc8": "04050004",
+    "facilityCount": 52,
+    "highRiskCount": 11,
+    "totalRsei": 148143032985,
+    "sensitivity": 0.45,
+    "avgScore": 57,
+    "riskLevel": "moderate",
+    "topChemicals": [
+      "Zinc compounds (N982)",
+      "Nickel compounds (N495)",
+      "Nitrate compounds (water dissociable) (N511)",
+      "Nonylphenol Ethoxylates (N535)",
+      "Chromium compounds (N090)",
+      "Nitric acid (7697-37-2)"
+    ]
+  },
+  "Thunder Bay": {
+    "name": "Thunder Bay",
+    "huc8": "04070006",
+    "facilityCount": 2,
+    "highRiskCount": 1,
+    "totalRsei": 5731338383,
+    "sensitivity": 0.42,
+    "avgScore": 51,
+    "riskLevel": "moderate",
+    "topChemicals": [
+      "Manganese compounds (N450)",
+      "Vanadium compounds (N770)",
+      "Barium compounds (N040)",
+      "Ammonia (7664-41-7)",
+      "Hydrochloric acid (acid aerosols) (7647-01-0)",
+      "Benzene (71-43-2)"
+    ]
+  },
+  "Cass": {
+    "name": "Cass",
+    "huc8": "04080205",
+    "facilityCount": 9,
+    "highRiskCount": 6,
+    "totalRsei": 53854764849,
+    "sensitivity": 0.6,
+    "avgScore": 40,
+    "riskLevel": "high",
+    "topChemicals": [
+      "Diisocyanates (N120)",
+      "N-Methyl-2-pyrrolidone (872-50-4)",
+      "Nitrate compounds (water dissociable) (N511)",
+      "Nitric acid (7697-37-2)",
+      "Peracetic acid (79-21-0)",
+      "Styrene (100-42-5)"
+    ]
+  },
+  "Au Gres-Rifle": {
+    "name": "Au Gres-Rifle",
+    "huc8": "04080101",
+    "facilityCount": 4,
+    "highRiskCount": 2,
+    "totalRsei": 3814164368,
+    "sensitivity": 0.4,
+    "avgScore": 54,
+    "riskLevel": "moderate",
+    "topChemicals": [
+      "Nitric acid (7697-37-2)",
+      "Nickel compounds (N495)",
+      "Cobalt (7440-48-4)",
+      "Nickel (7440-02-0)",
+      "Chromium (7440-47-3)",
+      "Barium (7440-39-3)"
+    ]
+  },
+  "Tahquamenon": {
+    "name": "Tahquamenon",
+    "huc8": "04020202",
+    "facilityCount": 1,
+    "highRiskCount": 1,
+    "totalRsei": 9694266029,
+    "sensitivity": 0.18,
+    "avgScore": 38,
+    "riskLevel": "high",
+    "topChemicals": [
+      "Diisocyanates (N120)",
+      "Methanol (67-56-1)",
+      "Formaldehyde (50-00-0)",
+      "Acetaldehyde (75-07-0)",
+      "Zinc compounds (N982)",
+      "Lead compounds (N420)"
+    ]
+  },
+  "Cedar-Ford": {
+    "name": "Cedar-Ford",
+    "huc8": "04030109",
+    "facilityCount": 3,
+    "highRiskCount": 2,
+    "totalRsei": 778568127887,
+    "sensitivity": 0.6,
+    "avgScore": 42,
+    "riskLevel": "high",
+    "topChemicals": [
+      "Chromium (7440-47-3)",
+      "Cobalt (7440-48-4)",
+      "Nickel (7440-02-0)",
+      "Manganese (7439-96-5)",
+      "Lead (7439-92-1)"
+    ]
+  },
+  "Maple": {
+    "name": "Maple",
+    "huc8": "04050005",
+    "facilityCount": 6,
+    "highRiskCount": 3,
+    "totalRsei": 41669650024,
+    "sensitivity": 0.45,
+    "avgScore": 49,
+    "riskLevel": "moderate",
+    "topChemicals": [
+      "Ammonia (7664-41-7)",
+      "Benzoyl peroxide (94-36-0)",
+      "Lead (7439-92-1)",
+      "Nitric acid (7697-37-2)",
+      "Peracetic acid (79-21-0)",
+      "Manganese compounds (N450)"
+    ]
+  },
+  "Pine": {
+    "name": "Pine",
+    "huc8": "04080202",
+    "facilityCount": 6,
+    "highRiskCount": 3,
+    "totalRsei": 3642894358,
+    "sensitivity": 0.4,
+    "avgScore": 52,
+    "riskLevel": "moderate",
+    "topChemicals": [
+      "Styrene (100-42-5)",
+      "Chromium (7440-47-3)",
+      "Nickel (7440-02-0)",
+      "Manganese (7439-96-5)",
+      "Copper (7440-50-8)",
+      "Diisocyanates (N120)"
+    ]
+  },
+  "Lake St. Clair": {
+    "name": "Lake St. Clair",
+    "huc8": "04090002",
+    "facilityCount": 6,
+    "highRiskCount": 1,
+    "totalRsei": 484306903,
+    "sensitivity": 0.6,
+    "avgScore": 55,
+    "riskLevel": "moderate",
+    "topChemicals": [
+      "Styrene (100-42-5)",
+      "Methyl methacrylate (80-62-6)",
+      "1,2,4-Trimethylbenzene (95-63-6)",
+      "Phenol (108-95-2)",
+      "Copper (7440-50-8)",
+      "Lead (7439-92-1)"
+    ]
+  },
+  "Thornapple": {
+    "name": "Thornapple",
+    "huc8": "04050007",
+    "facilityCount": 8,
+    "highRiskCount": 5,
+    "totalRsei": 105207774280,
+    "sensitivity": 0.48,
+    "avgScore": 47,
+    "riskLevel": "moderate",
+    "topChemicals": [
+      "Acetaldehyde (75-07-0)",
+      "n-Hexane (110-54-3)",
+      "Toluene (108-88-3)",
+      "Xylene (mixed isomers) (1330-20-7)",
+      "Benzene (71-43-2)",
+      "Cumene (98-82-8)"
+    ]
+  },
+  "Kawkawlin-Pine": {
+    "name": "Kawkawlin-Pine",
+    "huc8": "04080102",
+    "facilityCount": 2,
+    "highRiskCount": 0,
+    "totalRsei": 374755,
+    "sensitivity": 0.55,
+    "avgScore": 52,
+    "riskLevel": "moderate",
+    "topChemicals": [
+      "Zinc compounds (N982)",
+      "Aluminum (fume or dust) (7429-90-5)",
+      "Styrene (100-42-5)",
+      "Diisocyanates (N120)",
+      "Maleic anhydride (108-31-6)"
+    ]
+  },
+  "Tacoosh-Whitefish": {
+    "name": "Tacoosh-Whitefish",
+    "huc8": "04030111",
+    "facilityCount": 1,
+    "highRiskCount": 0,
+    "totalRsei": 7866000,
+    "sensitivity": 0.28,
+    "avgScore": 52,
+    "riskLevel": "moderate",
+    "topChemicals": [
+      "Lead compounds (N420)"
+    ]
+  },
+  "St. Marys": {
+    "name": "St. Marys",
+    "huc8": "04070001",
+    "facilityCount": 1,
+    "highRiskCount": 0,
+    "totalRsei": 2599000,
+    "sensitivity": 0.52,
+    "avgScore": 55,
+    "riskLevel": "moderate",
+    "topChemicals": [
+      "Lead (7439-92-1)"
+    ]
+  },
+  "Cheboygan": {
+    "name": "Cheboygan",
+    "huc8": "04070004",
+    "facilityCount": 1,
+    "highRiskCount": 0,
+    "totalRsei": 9810,
+    "sensitivity": 0.4,
+    "avgScore": 64,
+    "riskLevel": "moderate",
+    "topChemicals": [
+      "Copper (7440-50-8)"
+    ]
+  },
+  "Bad-Montreal": {
+    "name": "Bad-Montreal",
+    "huc8": "04010302",
+    "facilityCount": 1,
+    "highRiskCount": 0,
+    "totalRsei": 9200,
+    "sensitivity": 0.32,
+    "avgScore": 67,
+    "riskLevel": "low",
+    "topChemicals": [
+      "Lead compounds (N420)"
+    ]
+  },
+  "Brevoort-Millecoquins": {
+    "name": "Brevoort-Millecoquins",
+    "huc8": "04060107",
+    "facilityCount": 1,
+    "highRiskCount": 0,
+    "totalRsei": 3266,
+    "sensitivity": 0.28,
+    "avgScore": 68,
+    "riskLevel": "low",
+    "topChemicals": [
+      "Lead compounds (N420)"
+    ]
+  },
+  "Little Calumet-Galien": {
+    "name": "Little Calumet-Galien",
+    "huc8": "04040001",
+    "facilityCount": 1,
+    "highRiskCount": 0,
+    "totalRsei": 0,
+    "sensitivity": 0.5,
+    "avgScore": 67,
+    "riskLevel": "low",
+    "topChemicals": [
+      "Nitrate compounds (water dissociable) (N511)"
+    ]
+  },
+  "Manistique": {
+    "name": "Manistique",
+    "huc8": "04060106",
+    "facilityCount": 1,
+    "highRiskCount": 0,
+    "totalRsei": 0,
+    "sensitivity": 0.28,
+    "avgScore": 71,
+    "riskLevel": "low",
+    "topChemicals": [
+      "Nitrate compounds (water dissociable) (N511)"
+    ]
+  }
+}

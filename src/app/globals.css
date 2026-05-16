@@ -81,3 +81,13 @@ body {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.6; }
 }
+
+/* Watershed high-risk pulse */
+@keyframes wsPulse {
+  0%, 100% { opacity: 0.08; }
+  50% { opacity: 0.18; }
+}
+
+.ws-pulse {
+  animation: wsPulse 2.5s ease-in-out infinite;
+}
