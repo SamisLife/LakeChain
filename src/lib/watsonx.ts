@@ -77,15 +77,50 @@ function keywordFallback(query: string): QueryDecomposition {
   }
 }
 
+// Native HTTPS wrapper with rejectUnauthorized:false for Windows SSL inspection proxies
+function ibmFetch(url: string, init: RequestInit): Promise<{ ok: boolean; status: number; json: () => Promise<unknown> }> {
+  return new Promise((resolve, reject) => {
+    const https = require('https') as typeof import('https')
+    const { URL } = require('url') as typeof import('url')
+    const parsed = new URL(url)
+    const body = init.body as string | undefined
+    const options = {
+      hostname: parsed.hostname,
+      path: parsed.pathname + parsed.search,
+      method: init.method ?? 'GET',
+      headers: {
+        ...(init.headers as Record<string, string>),
+        ...(body ? { 'Content-Length': Buffer.byteLength(body) } : {}),
+      },
+      rejectUnauthorized: false,
+    }
+    const req = https.request(options, res => {
+      const chunks: Buffer[] = []
+      res.on('data', (c: Buffer) => chunks.push(c))
+      res.on('end', () => {
+        const text = Buffer.concat(chunks).toString('utf-8')
+        resolve({
+          ok: (res.statusCode ?? 0) >= 200 && (res.statusCode ?? 0) < 300,
+          status: res.statusCode ?? 0,
+          json: () => Promise.resolve(JSON.parse(text)),
+        })
+      })
+    })
+    req.on('error', reject)
+    if (body) req.write(body)
+    req.end()
+  })
+}
+
 async function getIBMToken(apiKey: string): Promise<string> {
-  const res = await fetch('https://iam.cloud.ibm.com/identity/token', {
+  const res = await ibmFetch('https://iam.cloud.ibm.com/identity/token', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: `grant_type=urn:ibm:params:oauth:grant-type:apikey&apikey=${encodeURIComponent(apiKey)}`,
   })
   if (!res.ok) throw new Error(`IAM token error: ${res.status}`)
-  const data = await res.json()
-  return data.access_token as string
+  const data = await res.json() as { access_token: string }
+  return data.access_token
 }
 
 export async function decomposeQuery(query: string): Promise<QueryDecomposition> {
@@ -106,7 +141,7 @@ Query: "${query}"
 Respond ONLY with a JSON object:
 {"naics3Digits":["332","336"],"keywords":["aluminum","automotive"],"certificationHints":[],"sectorLabel":"Fabricated Metals"}`
 
-    const res = await fetch(
+    const res = await ibmFetch(
       `${watsonxUrl}/ml/v1/text/generation?version=2023-05-29`,
       {
         method: 'POST',
