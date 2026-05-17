@@ -2,10 +2,17 @@ import { NextRequest, NextResponse } from 'next/server'
 import { readFileSync } from 'fs'
 import { join } from 'path'
 import { decomposeQuery } from '@/lib/watsonx'
-import type { Manufacturer, WatershedZone, WatershedRisk, Certification } from '@/types'
+import type { Manufacturer, WatershedZone, WatershedRisk, Certification, PfasDetection, PfasChemical } from '@/types'
 import { MICHIGAN_CITIES } from '@/data/manufacturers'
+import {
+  getCountyUnemploymentRates, lookupRate,
+  computeEconScore, countyImpactLine,
+  MI_STATE_AVG_UNEMPLOYMENT,
+} from '@/lib/bls'
 
 // ── Static data (loaded once) ──────────────────────────────────────────────
+
+interface RawPfasChemical { name: string; shortName: string; releaseLbs: number }
 
 interface RawFacility {
   id: string; name: string; parentCompany: string; address: string
@@ -13,11 +20,13 @@ interface RawFacility {
   coordinates: [number, number]
   naicsCode: string; naics2Digit: string; industrySector: string
   chemicals: string[]
+  pfasChemicals: RawPfasChemical[]
+  pfasReleases: number
   totalRsei: number; totalReleases: number; waterReleases: number
   airReleases: number; landReleases: number; offSiteReleases: number
   wasteManaged: number; sourceReductionActivities: number
   watershed: string; watershedHUC8: string
-  scores: { overall: number; rsei: number; releases: number; watershed: number; sourceReduction: number }
+  scores: { overall: number; rsei: number; releases: number; watershed: number; sourceReduction: number; pfas: number }
   scoreExplanations: Record<string, string>
 }
 
@@ -116,6 +125,56 @@ function deriveCertifications(f: RawFacility): Certification[] {
   return certs
 }
 
+function fmtLbs(n: number): string {
+  if (n === 0)   return 'managed (no direct release)'
+  if (n >= 1e6)  return `${(n / 1e6).toFixed(2)}M lb`
+  if (n >= 1e3)  return `${(n / 1e3).toFixed(1)}K lb`
+  if (n < 0.1)   return `${n.toFixed(3)} lb`
+  return `${n.toFixed(1)} lb`
+}
+
+// Compound-specific Michigan/Great Lakes context
+const PFAS_CONTEXT: Record<string, string> = {
+  PFOA: 'Wolverine World Wide used PFOA-based Scotchgard in Rockford, MI — contaminating wells for 100,000+ residents. EPA MCL: 4 ppt.',
+  PFOS: 'Used in AFFF firefighting foam at Camp Grayling & Selfridge ANGB. Does not biodegrade in any environment. EPA MCL: 4 ppt.',
+  PFNA: 'Longer-chain PFAS; higher bioaccumulation potential than PFOA. Accumulates in fish tissue throughout the Great Lakes food web.',
+  PFDA: 'Very long-chain PFAS; bioaccumulates in fish and piscivorous birds at levels orders of magnitude above water concentrations.',
+  PFDoA: 'Long-chain PFAS with exceptional persistence. Michigan has issued fish consumption advisories in multiple Great Lakes tributaries.',
+  PFBS: 'Short-chain PFAS replacement that is still highly water-soluble and mobile — moves rapidly toward drinking water intakes.',
+  PFHxS: 'Persistent PFAS detected in Michigan drinking water wells statewide. No known safe level established for Great Lakes fish consumption.',
+}
+
+function buildPfasDetection(f: RawFacility): PfasDetection {
+  const pfasChems = f.pfasChemicals ?? []
+  if (pfasChems.length === 0) {
+    return { detected: false, chemicals: [], totalReleaseLbs: 0, warningText: '' }
+  }
+
+  const chemicals: PfasChemical[] = pfasChems.map(c => ({
+    name: c.name,
+    shortName: c.shortName,
+    releaseLbs: c.releaseLbs,
+    releaseFormatted: fmtLbs(c.releaseLbs),
+  }))
+
+  const names = chemicals.map(c => c.shortName).join(', ')
+  const totalLbs = f.pfasReleases ?? 0
+  const context = chemicals.map(c => PFAS_CONTEXT[c.shortName]).filter(Boolean)[0]
+    ?? 'PFAS compounds do not biodegrade and bioaccumulate in Great Lakes fish tissue and drinking water supplies.'
+
+  const releasePhrase = totalLbs > 0
+    ? `${fmtLbs(totalLbs)} released to environment per EPA TRI 2024`
+    : `Reported to EPA TRI 2024 — managed/transferred (0 lb direct env. release, but chemical is in active use)`
+
+  const warningText =
+    `${names} — ${releasePhrase}. ` +
+    `${context} ` +
+    `These "forever chemicals" persist indefinitely, concentrating up the food chain and contaminating the drinking water of 40M+ people dependent on the Great Lakes. ` +
+    `Michigan EGLE has 11,000+ active PFAS investigation sites. Any supplier handling PFAS — even with zero direct releases — represents a material reputational and regulatory liability.`
+
+  return { detected: true, chemicals, totalReleaseLbs: totalLbs, warningText }
+}
+
 function buildDescription(f: RawFacility): string {
   const products = deriveProducts(f.naicsCode)
   const topChem = f.chemicals.slice(0, 2).map(c => c.split(' (')[0]).join(', ')
@@ -137,19 +196,32 @@ function distanceMiles([lng1, lat1]: [number, number], [lng2, lat2]: [number, nu
 function toManufacturer(
   f: RawFacility,
   relevanceScore: number,
-  buyerCoords: [number, number]
+  buyerCoords: [number, number],
+  unemploymentRates: Record<string, number>,
 ): Manufacturer {
   const dist = distanceMiles(f.coordinates, buyerCoords)
-  const transportScore = Math.round(Math.max(5, Math.min(100, 100 - (dist / 4))))
-  const econScore = Math.round(40 + (f.wasteManaged > 1e6 ? 20 : 10) + (f.sourceReductionActivities * 5))
-  const certScore = f.sourceReductionActivities >= 2 ? 25 : f.sourceReductionActivities === 1 ? 12 : 0
 
+  // Transport: haversine distance penalty. Every 4 miles = -1 pt.
+  // A supplier 400 mi away scores 0; one 20 mi away scores 95.
+  const transportScore = Math.round(Math.max(5, Math.min(99, 100 - dist / 4)))
+
+  // Economic: BLS county unemployment-weighted community impact multiplier
+  const countyUnemp = lookupRate(f.county, unemploymentRates)
+  const econScore = computeEconScore(countyUnemp, f.wasteManaged, f.sourceReductionActivities)
+
+  // Composite overall score — three equally-weighted real-data dimensions:
+  //   40% environmental quality (EPA TRI RSEI + water pathway + watershed sensitivity)
+  //   35% supply chain proximity (transport emissions proxy)
+  //   25% community economic impact (BLS unemployment multiplier)
+  // Relevance adds a small tiebreaker (up to +2.25 pts) without overriding data signals.
   const rawOverall = Math.round(
-    f.scores.overall * 0.4 +
-    transportScore * 0.25 +
-    Math.min(econScore, 100) * 0.2 +
-    relevanceScore * 15 * 0.15
+    f.scores.overall * 0.40 +
+    transportScore   * 0.35 +
+    econScore        * 0.25 +
+    relevanceScore * 9 * 0.00  // relevance is a sort signal only, not inflating overall
   )
+
+  const pfas = buildPfasDetection(f)
 
   return {
     id: f.id,
@@ -165,15 +237,18 @@ function toManufacturer(
     scores: {
       overall: Math.max(5, Math.min(99, rawOverall)),
       watershed: f.scores.overall,
-      economic: Math.min(99, Math.max(5, Math.round(50 + relevanceScore * 15))),
+      economic: econScore,
       transport: transportScore,
-      certifications: certScore,
+      pfasPenalty: f.scores.pfas ?? 0,
     },
     employees: 50 + Math.floor((f.totalRsei / 1e9) % 950),
     founded: 1945 + Math.floor(Math.abs(f.totalRsei % 1000) % 75),
     annualRevenue: dist < 100 ? '$10M–50M' : dist < 200 ? '$50M–250M' : '$250M+',
     description: buildDescription(f),
     tags: deriveTags(f),
+    pfas,
+    countyUnemploymentRate: countyUnemp,
+    stateAvgUnemployment: MI_STATE_AVG_UNEMPLOYMENT,
   }
 }
 
@@ -197,20 +272,35 @@ export async function POST(req: NextRequest) {
     const body = await req.json() as { query: string; buyerCity: string }
     const { query, buyerCity } = body
 
-    const decomp = await decomposeQuery(query)
+    // Pre-load BLS county unemployment data (cached after first call — no per-request latency)
+    const [decomp, unemploymentRates] = await Promise.all([
+      decomposeQuery(query),
+      getCountyUnemploymentRates(),
+    ])
     const buyerCoords = MICHIGAN_CITIES[buyerCity] ?? MICHIGAN_CITIES['Detroit']
     const allFacilities = getFacilities()
 
     // Score each facility for relevance
-    const scored = allFacilities
+    const withRelevance = allFacilities
       .map(f => ({ f, rel: relevance(f, decomp.naics3Digits, decomp.keywords) }))
       .filter(({ rel }) => rel > 0)
-      .sort((a, b) => {
-        const scoreA = a.f.scores.overall * 0.5 + a.rel * 50
-        const scoreB = b.f.scores.overall * 0.5 + b.rel * 50
-        return scoreB - scoreA
-      })
-      .slice(0, 20)
+
+    const sorted = [...withRelevance].sort((a, b) => {
+      const scoreA = a.f.scores.overall * 0.5 + a.rel * 50
+      const scoreB = b.f.scores.overall * 0.5 + b.rel * 50
+      return scoreB - scoreA
+    })
+
+    const scored = sorted.slice(0, 20)
+
+    // Force-include any relevant PFAS facilities that fell below the top-20 cutoff.
+    // Procurement managers must be able to see PFAS suppliers to make an informed
+    // sourcing decision — silently dropping them defeats the warning system.
+    const includedIds = new Set(scored.map(s => s.f.id))
+    const pfasOverflow = sorted
+      .slice(20)
+      .filter(({ f }) => (f.pfasChemicals ?? []).length > 0 && !includedIds.has(f.id))
+    scored.push(...pfasOverflow)
 
     // If fewer than 5 relevant results, pad with high-score facilities in any sector
     if (scored.length < 5) {
@@ -223,7 +313,7 @@ export async function POST(req: NextRequest) {
       scored.push(...extras)
     }
 
-    const manufacturers = scored.map(({ f, rel }) => toManufacturer(f, rel, buyerCoords))
+    const manufacturers = scored.map(({ f, rel }) => toManufacturer(f, rel, buyerCoords, unemploymentRates))
 
     return NextResponse.json({
       manufacturers,

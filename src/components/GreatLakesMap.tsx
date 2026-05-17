@@ -55,7 +55,7 @@ function transitionFor(mode: TMode) {
   if (mode === 'drag') return 'none'
   if (mode === 'reset') return 'transform 0.45s cubic-bezier(0.4,0,0.2,1)'
   if (mode === 'button') return 'transform 0.28s cubic-bezier(0.4,0,0.2,1)'
-  return 'transform 0.10s ease-out' // wheel
+  return 'none' // wheel — instant, 60fps events are already smooth
 }
 
 export default function GreatLakesMap({
@@ -145,30 +145,33 @@ export default function GreatLakesMap({
   const viewRef = useRef(DEFAULT_VIEW)
   viewRef.current = view
 
+  // Attach wheel handler to document so we intercept before the browser's
+  // native zoom/scroll, then gate on whether the pointer is over our container.
   useEffect(() => {
-    const el = containerRef.current
-    if (!el) return
     const handler = (e: WheelEvent) => {
+      const el = containerRef.current
+      if (!el || !el.contains(e.target as Node)) return
       e.preventDefault()
-      const { sx, sy, left, top } = (() => {
-        const rect = el.getBoundingClientRect()
-        return { sx: MAP_W / rect.width, sy: MAP_H / rect.height, left: rect.left, top: rect.top }
-      })()
-      const mx = (e.clientX - left) * sx
-      const my = (e.clientY - top) * sy
-      // Normalize delta — different devices report very different deltaY magnitudes
-      const raw = e.deltaY * (e.deltaMode === 0 ? 1 : e.deltaMode === 1 ? 20 : 300)
-      const delta = Math.pow(0.999, raw)
+      e.stopPropagation()
+      const rect = el.getBoundingClientRect()
+      const sx = MAP_W / rect.width
+      const sy = MAP_H / rect.height
+      const mx = (e.clientX - rect.left) * sx
+      const my = (e.clientY - rect.top) * sy
+      // Fixed ~15 % per notch regardless of device delta magnitude
+      const dir = e.deltaY > 0 ? -1 : 1
+      const step = 0.15 * Math.min(1, Math.abs(e.deltaY) / 50)
+      const factor = 1 + dir * Math.max(step, 0.05)
       const prev = viewRef.current
-      const newK = Math.max(0.5, Math.min(8, prev.k * delta))
+      const newK = Math.max(0.5, Math.min(8, prev.k * factor))
       const ratio = newK / prev.k
       tmodeRef.current = 'wheel'
       setTmode('wheel')
       setView({ k: newK, x: mx - (mx - prev.x) * ratio, y: my - (my - prev.y) * ratio })
     }
-    el.addEventListener('wheel', handler, { passive: false })
-    return () => el.removeEventListener('wheel', handler)
-  }, []) // stable — reads view via ref
+    document.addEventListener('wheel', handler, { passive: false })
+    return () => document.removeEventListener('wheel', handler)
+  }, []) // stable via refs
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if (e.button !== 0) return
@@ -193,9 +196,16 @@ export default function GreatLakesMap({
   }, [])
 
   const changeZoom = useCallback((dir: 1 | -1) => {
-    const factor = dir > 0 ? 1.6 : 0.625
+    const factor = dir > 0 ? 1.5 : 1 / 1.5
     setTmode('button')
-    setView(prev => ({ ...prev, k: Math.max(0.5, Math.min(8, prev.k * factor)) }))
+    setView(prev => {
+      // Zoom toward the visible center of the map, not the SVG origin
+      const cx = MAP_W / 2
+      const cy = MAP_H / 2
+      const newK = Math.max(0.5, Math.min(8, prev.k * factor))
+      const ratio = newK / prev.k
+      return { k: newK, x: cx - (cx - prev.x) * ratio, y: cy - (cy - prev.y) * ratio }
+    })
   }, [])
 
   const resetView = useCallback(() => {
@@ -210,11 +220,11 @@ export default function GreatLakesMap({
     <div
       ref={containerRef}
       className="relative w-full h-full bg-lc-waterDeep overflow-hidden select-none"
+      style={{ touchAction: 'none', cursor: dragRef.current ? 'grabbing' : 'grab' }}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
-      style={{ cursor: dragRef.current ? 'grabbing' : 'grab' }}
     >
       {/* Scanline */}
       <div className="absolute inset-0 pointer-events-none z-10">
@@ -237,6 +247,10 @@ export default function GreatLakesMap({
           </filter>
           <filter id="nodeGlow" x="-100%" y="-100%" width="300%" height="300%">
             <feGaussianBlur stdDeviation="4" result="blur" />
+            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
+          <filter id="pfasGlow" x="-150%" y="-150%" width="400%" height="400%">
+            <feGaussianBlur stdDeviation="5" result="blur" />
             <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
           <radialGradient id="buyerGrad" cx="50%" cy="50%" r="50%">
@@ -358,7 +372,8 @@ export default function GreatLakesMap({
           {/* Manufacturer markers — inverse-scaled so they stay pin-sized at any zoom */}
           {mfrPoints.map(m => {
             const isActive = m.id === activeId
-            const color = scoreColor(m.scores.overall)
+            const hasPfas = m.pfas?.detected
+            const color = hasPfas ? '#ef4444' : scoreColor(m.scores.overall)
             const [mx, my] = m.svgPt
             const wsCol = m.watershedRisk === 'high' ? '#ef4444' : m.watershedRisk === 'medium' ? '#f59e0b' : '#00d97e'
             const r = (isActive ? 6 : 4.5) * ms
@@ -368,15 +383,37 @@ export default function GreatLakesMap({
                 onMouseEnter={() => { setTooltipMfr(m); setTooltipPos({ x: mx, y: my }) }}
                 onMouseLeave={() => setTooltipMfr(null)}
                 style={{ cursor: 'pointer' }}>
+                {/* PFAS outer warning ring — always pulsing red */}
+                {hasPfas && (
+                  <>
+                    <circle cx={mx} cy={my} r={r * 3.8} fill="none" stroke="#ef4444"
+                      strokeWidth={0.8 * ms} strokeOpacity={0.5}
+                      className="pfas-ring" filter="url(#pfasGlow)" />
+                    <circle cx={mx} cy={my} r={r * 2.8} fill="none" stroke="#ef4444"
+                      strokeWidth={0.4 * ms} strokeOpacity={0.25} className="pfas-ring-slow" />
+                  </>
+                )}
                 {isActive && <circle cx={mx} cy={my} className="pulse-ring" fill="none" stroke={color} strokeWidth={ms} r={r * 1.3} />}
-                <circle cx={mx} cy={my} r={r * 2.2} fill={`${wsCol}10`} stroke={wsCol} strokeWidth={0.4 * ms} strokeOpacity={isActive ? 0.5 : 0.2} />
-                <circle cx={mx} cy={my} r={r} fill={isActive ? `${color}35` : '#0c1710'} stroke={color} strokeWidth={(isActive ? 1.4 : 0.9) * ms} filter={isActive ? 'url(#nodeGlow)' : undefined} />
+                <circle cx={mx} cy={my} r={r * 2.2}
+                  fill={hasPfas ? '#3f000010' : `${wsCol}10`}
+                  stroke={hasPfas ? '#ef4444' : wsCol}
+                  strokeWidth={0.4 * ms}
+                  strokeOpacity={hasPfas ? (isActive ? 0.7 : 0.45) : (isActive ? 0.5 : 0.2)} />
+                <circle cx={mx} cy={my} r={r}
+                  fill={isActive ? `${color}35` : (hasPfas ? '#1a0505' : '#0c1710')}
+                  stroke={color} strokeWidth={(isActive ? 1.4 : hasPfas ? 1.2 : 0.9) * ms}
+                  filter={isActive || hasPfas ? 'url(#nodeGlow)' : undefined} />
                 <circle cx={mx} cy={my} r={r * 0.42} fill={color} />
+                {/* PFAS "!" badge */}
+                {hasPfas && !isActive && (
+                  <text x={mx + r * 1.1} y={my - r * 1.1} textAnchor="middle" dominantBaseline="middle"
+                    fill="#ef4444" fontSize={5.5 * ms} fontFamily="JetBrains Mono, monospace" fontWeight="900">!</text>
+                )}
                 <text x={mx} y={my - (14 * ms)} textAnchor="middle"
-                  fill={isActive ? '#e2f0e8' : '#4a7a5e'}
+                  fill={isActive ? (hasPfas ? '#ffaaaa' : '#e2f0e8') : (hasPfas ? '#c85555' : '#4a7a5e')}
                   fontSize={(isActive ? 8.5 : 6.5) * ms}
                   fontFamily="JetBrains Mono, monospace"
-                  fontWeight={isActive ? '600' : '400'}>
+                  fontWeight={isActive || hasPfas ? '600' : '400'}>
                   {m.city}
                 </text>
                 {isActive && (
@@ -407,27 +444,101 @@ export default function GreatLakesMap({
 
       {/* Manufacturer tooltip */}
       <AnimatePresence>
-        {tooltipMfr && !tooltipWs && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
-            className="absolute pointer-events-none z-30 bg-lc-surface border border-lc-border rounded-lg p-3 shadow-xl"
-            style={{
-              left: `${((tooltipPos.x * view.k + view.x) / MAP_W) * 100}%`,
-              top: `${((tooltipPos.y * view.k + view.y) / MAP_H) * 100}%`,
-              transform: 'translate(-50%, -130%)', maxWidth: 220,
-            }}>
-            <div className="font-semibold text-xs text-lc-text mb-1">{tooltipMfr.name}</div>
-            <div className="text-[10px] text-lc-textMuted">{tooltipMfr.watershed}</div>
-            <div className="mt-1.5 flex gap-2">
-              {(['overall', 'watershed', 'transport'] as const).map(key => (
-                <div key={key} className="text-center">
-                  <div className="font-mono text-[10px]" style={{ color: scoreColor(tooltipMfr.scores[key]) }}>{tooltipMfr.scores[key]}</div>
-                  <div className="text-[8px] text-lc-textFaint capitalize">{key}</div>
+        {tooltipMfr && !tooltipWs && (() => {
+          const m = tooltipMfr
+          const unemp = m.countyUnemploymentRate
+          const stateAvg = m.stateAvgUnemployment
+          const delta = unemp - stateAvg
+          const deltaStr = delta > 0.2
+            ? `+${delta.toFixed(1)}% above state avg`
+            : delta < -0.2
+            ? `${delta.toFixed(1)}% below state avg`
+            : 'near state average'
+          const unempColor = unemp >= 7 ? '#ef4444' : unemp >= 5 ? '#f59e0b' : '#00d97e'
+          return (
+            <motion.div
+              key={m.id}
+              initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 4 }}
+              transition={{ duration: 0.15 }}
+              className="absolute pointer-events-none z-30 bg-lc-surface border border-lc-border rounded-xl shadow-2xl overflow-hidden"
+              style={{
+                left: `${((tooltipPos.x * view.k + view.x) / MAP_W) * 100}%`,
+                top: `${((tooltipPos.y * view.k + view.y) / MAP_H) * 100}%`,
+                transform: 'translate(-50%, -115%)', width: 260,
+              }}>
+
+              {/* PFAS alert bar */}
+              {m.pfas?.detected && (
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-red-950/80 border-b border-red-500/30">
+                  <span className="text-[9px] font-mono font-bold text-red-400">⚠ PFAS</span>
+                  <span className="text-[9px] font-mono text-red-300/80 truncate">
+                    {m.pfas.chemicals.map(c => c.shortName).join(' · ')}
+                  </span>
                 </div>
-              ))}
-            </div>
-          </motion.div>
-        )}
+              )}
+
+              {/* Facility header */}
+              <div className="px-3 pt-2.5 pb-2 border-b border-lc-border/60">
+                <div className="font-semibold text-[12px] text-lc-text leading-tight">{m.name}</div>
+                <div className="text-[10px] text-lc-textMuted mt-0.5">{m.city} · {m.watershed}</div>
+              </div>
+
+              {/* County impact — the human story */}
+              <div className="px-3 py-2.5 border-b border-lc-border/40" style={{ background: 'rgba(0,217,126,0.03)' }}>
+                <div className="flex items-baseline justify-between mb-1">
+                  <span className="text-[10px] font-mono font-semibold text-lc-text uppercase tracking-wide">
+                    {m.county}
+                  </span>
+                  <div className="flex items-baseline gap-1">
+                    <span className="font-mono text-[13px] font-bold" style={{ color: unempColor }}>
+                      {unemp.toFixed(1)}%
+                    </span>
+                    <span className="text-[9px] text-lc-textFaint">unemp.</span>
+                  </div>
+                </div>
+                <div className="text-[9px] font-mono text-lc-textFaint mb-1.5">{deltaStr}</div>
+                {/* Mini unemployment bar */}
+                <div className="relative h-1 bg-lc-border rounded-full overflow-hidden mb-2">
+                  <div className="absolute inset-y-0 left-0 rounded-full"
+                    style={{ width: `${Math.min(unemp * 7, 100)}%`, background: unempColor }} />
+                  {/* State average tick */}
+                  <div className="absolute inset-y-0 w-px bg-lc-textFaint/40"
+                    style={{ left: `${Math.min(stateAvg * 7, 100)}%` }} />
+                </div>
+                <p className="text-[9px] text-lc-textMuted leading-relaxed italic">
+                  {m.countyUnemploymentRate >= 7
+                    ? `${unemp.toFixed(1)}% of ${m.county.replace(' County', '')} County residents are seeking work — procurement here is direct community investment.`
+                    : m.countyUnemploymentRate >= 5
+                    ? `Sourcing here supports manufacturing employment in ${m.county.replace(' County', '')} County, where ${unemp.toFixed(1)}% are seeking work.`
+                    : `${m.county.replace(' County', '')} County's labor market runs at ${unemp.toFixed(1)}% — a stable industrial anchor in the Great Lakes region.`
+                  }
+                </p>
+              </div>
+
+              {/* Score strip */}
+              <div className="px-3 py-2 flex gap-3">
+                {([
+                  ['Overall', 'overall'],
+                  ['Watershed', 'watershed'],
+                  ['Transport', 'transport'],
+                ] as const).map(([label, key]) => (
+                  <div key={key} className="text-center flex-1">
+                    <div className="font-mono text-[11px] font-bold" style={{ color: scoreColor(m.scores[key]) }}>
+                      {m.scores[key]}
+                    </div>
+                    <div className="text-[8px] text-lc-textFaint mt-0.5">{label}</div>
+                  </div>
+                ))}
+                <div className="text-center flex-1">
+                  <div className="font-mono text-[11px] font-bold" style={{ color: scoreColor(m.scores.economic) }}>
+                    {m.scores.economic}
+                  </div>
+                  <div className="text-[8px] text-lc-textFaint mt-0.5">Econ.</div>
+                </div>
+              </div>
+            </motion.div>
+          )
+        })()}
       </AnimatePresence>
 
       {/* Watershed tooltip */}
@@ -460,7 +571,11 @@ export default function GreatLakesMap({
             <span style={{ color: col }}>{lbl}</span>
           </div>
         ))}
-        <div className="mt-1 pt-1 border-t border-lc-border text-lc-textFaint">EPA TRI 2024 · EGLE</div>
+        <div className="mt-1 pt-1 border-t border-lc-border flex items-center gap-1.5">
+          <div className="w-2 h-2 rounded-full bg-red-500 pfas-ring" />
+          <span className="text-red-400">PFAS Detected</span>
+        </div>
+        <div className="mt-0.5 text-lc-textFaint">EPA TRI 2024 · EGLE</div>
       </div>
 
       {/* Header */}

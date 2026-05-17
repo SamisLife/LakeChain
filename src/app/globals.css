@@ -65,6 +65,25 @@ body {
   transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* PFAS warning ring — slow, ominous pulse */
+@keyframes pfasRing {
+  0%   { opacity: 0.6; r: 18; }
+  50%  { opacity: 0.15; }
+  100% { opacity: 0.6; r: 18; }
+}
+@keyframes pfasRingSlow {
+  0%   { opacity: 0.3; }
+  50%  { opacity: 0.08; }
+  100% { opacity: 0.3; }
+}
+.pfas-ring {
+  animation: pfasRing 2.5s ease-in-out infinite;
+}
+.pfas-ring-slow {
+  animation: pfasRingSlow 4s ease-in-out infinite;
+  animation-delay: 1.25s;
+}
+
 /* Scan line */
 @keyframes scanLine {
   0%   { top: 0%; opacity: 0.6; }

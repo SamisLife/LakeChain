@@ -82,6 +82,39 @@ const SENSITIVITY = {
   'Flambeau':      0.25,
 }
 
+// ─── PFAS detection ─────────────────────────────────────────────────────────
+// EPA TRI-reported PFAS compounds found in Michigan facilities
+const PFAS_CHEMICALS = {
+  'Perfluorooctanoic acid (335-67-1)':          'PFOA',
+  'Perfluorooctane sulfonic acid (1763-23-1)':  'PFOS',
+  'Perfluorononanoic acid (375-95-1)':          'PFNA',
+  'Perfluorodecanoic acid (335-76-2)':          'PFDA',
+  'Perfluorododecanoic acid (307-55-1)':        'PFDoA',
+  // Broader PFAS family — catch-all for any new additions in future TRI data
+  'Perfluorobutanoic acid (375-22-4)':          'PFBA',
+  'Perfluorohexanoic acid (307-24-4)':          'PFHxA',
+  'Perfluoroheptanoic acid (375-85-9)':         'PFHpA',
+  'Perfluorobutane sulfonic acid (375-73-5)':   'PFBS',
+  'Perfluorohexane sulfonic acid (355-46-4)':   'PFHxS',
+  'Perfluorooctane sulfonamide (754-91-6)':     'PFOSA',
+}
+
+function isPfas(chemName) {
+  if (PFAS_CHEMICALS[chemName]) return true
+  const lower = chemName.toLowerCase()
+  return (
+    lower.includes('perfluoro') ||
+    lower.includes('polyfluoroalkyl') ||
+    lower.includes('fluorotelomer') ||
+    lower.includes('hfpo-da') ||
+    (lower.includes('sulfonamide') && lower.includes('fluoro'))
+  )
+}
+
+function pfasShortName(chemName) {
+  return PFAS_CHEMICALS[chemName] ?? chemName.split(' ')[0]
+}
+
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
 function parseNum(str) {
@@ -141,6 +174,8 @@ for (const row of rows) {
       naics2Digit: (row['NAICS Code'] || '').slice(0, 2),
       industrySector: (row['Industry Sector'] || '').trim(),
       chemicals: [],
+      pfasChemicals: [],   // { name, shortName, releaseLbs }
+      pfasReleases: 0,
       totalRsei: 0,
       totalReleases: 0,
       waterReleases: 0,
@@ -159,6 +194,18 @@ for (const row of rows) {
   const f = facilityMap.get(fid)
   const chem = (row['Chemical'] || '').trim()
   if (chem && !f.chemicals.includes(chem)) f.chemicals.push(chem)
+
+  // PFAS per-row tracking (accumulate release lbs per compound)
+  if (chem && isPfas(chem)) {
+    const relLbs = parseNum(row['Releases (lb)'])
+    const existing = f.pfasChemicals.find(p => p.name === chem)
+    if (existing) {
+      existing.releaseLbs += relLbs
+    } else {
+      f.pfasChemicals.push({ name: chem, shortName: pfasShortName(chem), releaseLbs: relLbs })
+    }
+    f.pfasReleases += relLbs
+  }
 
   f.totalRsei     += parseNum(row['RSEI Hazard'])
   f.totalReleases += parseNum(row['Releases (lb)'])
@@ -237,8 +284,13 @@ function computeScores(f) {
   const srcScore = f.sourceReductionActivities >= 2 ? 15
                  : f.sourceReductionActivities === 1 ? 8 : 0
 
-  const overall = Math.max(5, Math.min(99, rseiScore + relScore + wsScore + srcScore))
-  return { overall, rsei: rseiScore, releases: relScore, watershed: wsScore, sourceReduction: srcScore }
+  // PFAS persistence penalty (-25): "forever chemicals" don't biodegrade —
+  // any release, regardless of volume, represents permanent bioaccumulation risk.
+  const pfasFlag = (f.pfasChemicals || []).length > 0
+  const pfasPenalty = pfasFlag ? 25 : 0
+
+  const overall = Math.max(5, Math.min(99, rseiScore + relScore + wsScore + srcScore - pfasPenalty))
+  return { overall, rsei: rseiScore, releases: relScore, watershed: wsScore, sourceReduction: srcScore, pfas: pfasPenalty }
 }
 
 function generateExplanations(f, scores) {
@@ -279,7 +331,14 @@ function generateExplanations(f, scores) {
   else if (f.sourceReductionActivities === 1) srcExp = 'One EPA-reported source reduction activity in 2024 — demonstrates baseline commitment to pollution prevention beyond compliance.'
   else                                         srcExp = 'Two source reduction activities reported — the maximum logged. Strong indicator of proactive environmental management culture.'
 
-  return { rsei: rseiExp, releases: relExp, watershed: wsExp, sourceReduction: srcExp }
+  let pfasExp = null
+  if (f.pfasChemicals && f.pfasChemicals.length > 0) {
+    const names = f.pfasChemicals.map(c => c.shortName).join(', ')
+    const lbs = formatLbs(f.pfasReleases || 0)
+    pfasExp = `${names} confirmed in EPA TRI 2024 reporting. ${lbs} released. These "forever chemicals" do not biodegrade under any natural process and bioaccumulate up the Great Lakes food web — fish tissue, fish-eating wildlife, and ultimately human health via drinking water intakes serving 40M+ people. Michigan EGLE has documented 11,000+ PFAS-impacted sites statewide. -25 pts applied to sustainability score; PFAS releases are categorically non-comparable to conventional pollutants of equivalent mass.`
+  }
+
+  return { rsei: rseiExp, releases: relExp, watershed: wsExp, sourceReduction: srcExp, pfas: pfasExp }
 }
 
 // Apply scores to all facilities

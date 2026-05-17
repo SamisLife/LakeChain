@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react'
 import dynamic from 'next/dynamic'
 import { motion } from 'framer-motion'
-import { Filter, RefreshCw, Layers, Map, GitBranch } from 'lucide-react'
+import { Filter, RefreshCw, Layers, Map, GitBranch, TriangleAlert } from 'lucide-react'
 import { Manufacturer, AppState, ScenarioState } from '@/types'
 import { parseScenario, applyScenario } from '@/lib/scenario'
 import ManufacturerCard from './ManufacturerCard'
@@ -23,11 +23,15 @@ type RightPanel = 'map' | 'graph' | 'split'
 export default function Dashboard({ manufacturers, state, onStateChange }: Props) {
   const [rightPanel, setRightPanel] = useState<RightPanel>('split')
   const [scenario, setScenario] = useState<ScenarioState>({ text: '', filters: {} })
+  const [hidePfas, setHidePfas] = useState(false)
+
+  const pfasCount = useMemo(() => manufacturers.filter(m => m.pfas?.detected).length, [manufacturers])
 
   const filtered = useMemo(() => {
-    const result = applyScenario(manufacturers, scenario)
-    return [...result].sort((a, b) => b.scores.overall - a.scores.overall)
-  }, [manufacturers, scenario])
+    const withScenario = applyScenario(manufacturers, scenario)
+    const withPfas = hidePfas ? withScenario.filter(m => !m.pfas?.detected) : withScenario
+    return [...withPfas].sort((a, b) => b.scores.overall - a.scores.overall)
+  }, [manufacturers, scenario, hidePfas])
 
   const handleScenario = (text: string) => {
     const filters = text ? parseScenario(text) : {}
@@ -66,6 +70,21 @@ export default function Dashboard({ manufacturers, state, onStateChange }: Props
           <div className="w-1.5 h-1.5 rounded-full bg-lc-green animate-pulse" />
           {filtered.length} of {manufacturers.length} suppliers active
         </div>
+
+        {/* PFAS filter toggle */}
+        {pfasCount > 0 && (
+          <button
+            onClick={() => setHidePfas(h => !h)}
+            className={`flex items-center gap-1.5 text-[11px] font-mono transition-all border rounded px-2 py-1 ${
+              hidePfas
+                ? 'border-red-500 text-red-400 bg-red-500/10 shadow-[0_0_8px_rgba(239,68,68,0.2)]'
+                : 'border-red-500/40 text-red-400/70 hover:border-red-500 hover:text-red-400'
+            }`}
+          >
+            <TriangleAlert className="w-3 h-3" />
+            {hidePfas ? `PFAS Hidden (${pfasCount})` : `Hide PFAS (${pfasCount})`}
+          </button>
+        )}
 
         {/* Panel toggles */}
         <div className="flex border border-lc-border rounded overflow-hidden">

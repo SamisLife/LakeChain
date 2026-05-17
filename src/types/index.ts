@@ -1,3 +1,17 @@
+export interface PfasChemical {
+  name: string          // full EPA TRI name
+  shortName: string     // PFOA, PFOS, PFNA, etc.
+  releaseLbs: number
+  releaseFormatted: string
+}
+
+export interface PfasDetection {
+  detected: boolean
+  chemicals: PfasChemical[]
+  totalReleaseLbs: number
+  warningText: string   // Great Lakes–specific health context
+}
+
 export interface Certification {
   name: string
   body: string
@@ -7,10 +21,10 @@ export interface Certification {
 
 export interface ManufacturerScores {
   overall: number
-  watershed: number
-  economic: number
-  transport: number
-  certifications: number
+  watershed: number    // 0–99: EPA RSEI + water-pathway + watershed sensitivity
+  economic: number     // 0–99: BLS unemployment-weighted community impact multiplier
+  transport: number    // 0–99: haversine distance penalty (closer = lower emissions)
+  pfasPenalty: number  // 0 or 25: PFAS persistence deduction (shown as −25)
 }
 
 export type WatershedZone =
@@ -39,6 +53,9 @@ export interface Manufacturer {
   annualRevenue: string
   description: string
   tags: string[]
+  pfas: PfasDetection
+  countyUnemploymentRate: number   // BLS % for this facility's county
+  stateAvgUnemployment: number     // Michigan state average (for delta comparison)
 }
 
 export interface ScenarioState {
@@ -50,6 +67,7 @@ export interface ScenarioState {
     watershedZones?: WatershedZone[]
     minScore?: number
     tags?: string[]
+    hidePfas?: boolean
   }
 }
 

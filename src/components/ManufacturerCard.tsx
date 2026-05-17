@@ -2,7 +2,7 @@
 
 import { memo } from 'react'
 import { motion } from 'framer-motion'
-import { MapPin, Users, TrendingUp, Droplets, Zap, Shield } from 'lucide-react'
+import { MapPin, Users, TrendingUp, Droplets, Zap, TriangleAlert } from 'lucide-react'
 import { Manufacturer } from '@/types'
 import { scoreColor, watershedRiskColor, cn } from '@/lib/utils'
 import ScoreRing from './ScoreRing'
@@ -18,8 +18,7 @@ interface Props {
 const SCORE_DIMS = [
   { key: 'watershed', label: 'Watershed Impact', icon: Droplets },
   { key: 'economic', label: 'Economic Multiplier', icon: TrendingUp },
-  { key: 'transport', label: 'Transport Emissions', icon: Zap },
-  { key: 'certifications', label: 'Certifications', icon: Shield },
+  { key: 'transport', label: 'Transport Proximity', icon: Zap },
 ] as const
 
 const RISK_LABELS = { low: 'Low Risk', medium: 'Moderate', high: 'Elevated' }
@@ -41,11 +40,44 @@ export default memo(function ManufacturerCard({ manufacturer: m, rank, isActive,
       className={cn(
         'relative cursor-pointer rounded-lg border transition-all duration-200 overflow-hidden',
         'bg-lc-surface hover:bg-lc-surfaceAlt',
-        isActive
+        m.pfas.detected
+          ? isActive
+            ? 'border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.20)]'
+            : 'border-red-500/40 hover:border-red-500/70'
+          : isActive
           ? 'border-lc-green shadow-[0_0_20px_rgba(0,217,126,0.15)]'
           : 'border-lc-border hover:border-lc-borderBright'
       )}
     >
+      {/* PFAS alert banner */}
+      {m.pfas.detected && (
+        <div className="bg-red-950/70 border-b border-red-500/30 px-3 py-2">
+          <div className="flex items-center gap-2">
+            <TriangleAlert className="w-3 h-3 text-red-400 shrink-0" />
+            <span className="text-[10px] font-mono font-bold text-red-400 uppercase tracking-wider">
+              PFAS Detected
+            </span>
+            <span className="ml-auto text-[10px] font-mono text-red-300">
+              {m.pfas.chemicals.map(c => c.shortName).join(' · ')}
+            </span>
+          </div>
+          <div className="text-[9px] text-red-300/70 mt-0.5 font-mono">
+            {m.pfas.totalReleaseLbs > 0
+              ? `${m.pfas.chemicals[0]?.releaseFormatted ?? ''} released · Forever chemical · Non-biodegradable`
+              : 'Trace amounts detected · Non-biodegradable forever chemical'}
+          </div>
+          {isActive && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              className="mt-2 pt-2 border-t border-red-500/20 text-[9px] text-red-300/60 leading-relaxed"
+            >
+              {m.pfas.warningText}
+            </motion.div>
+          )}
+        </div>
+      )}
+
       {/* Rank stripe */}
       <div
         className="absolute left-0 top-0 bottom-0 w-0.5"
@@ -93,28 +125,50 @@ export default memo(function ManufacturerCard({ manufacturer: m, rank, isActive,
           ⬡ {m.watershed}
         </div>
 
-        {/* Score breakdown bars */}
+        {/* Score breakdown — 3 real-data dimensions */}
         <div className="mt-2.5 space-y-1.5">
           {SCORE_DIMS.map(({ key, label, icon: Icon }) => {
             const val = m.scores[key]
             const col = scoreColor(val)
+            const isEcon = key === 'economic'
+            const unemp = m.countyUnemploymentRate
+            const delta = unemp - m.stateAvgUnemployment
+            const unempLabel = isEcon
+              ? `${unemp.toFixed(1)}% unemp${delta > 0.4 ? ` ▲${delta.toFixed(1)}%` : delta < -0.4 ? ` ▼${Math.abs(delta).toFixed(1)}%` : ''}`
+              : null
             return (
-              <div key={key} className="flex items-center gap-2">
-                <Icon className="w-2.5 h-2.5 shrink-0" style={{ color: col }} />
-                <span className="text-[10px] text-lc-textMuted w-28 shrink-0">{label}</span>
-                <div className="flex-1 h-1 bg-lc-border rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full score-bar-fill"
-                    style={{ background: col, width: `${val}%` }}
-                  />
+              <div key={key}>
+                <div className="flex items-center gap-2">
+                  <Icon className="w-2.5 h-2.5 shrink-0" style={{ color: col }} />
+                  <span className="text-[10px] text-lc-textMuted w-28 shrink-0">{label}</span>
+                  <div className="flex-1 h-1 bg-lc-border rounded-full overflow-hidden">
+                    <div className="h-full rounded-full score-bar-fill" style={{ background: col, width: `${val}%` }} />
+                  </div>
+                  <span className="font-mono text-[10px] shrink-0 w-6 text-right" style={{ color: col }}>{val}</span>
                 </div>
-                <span className="font-mono text-[10px] shrink-0 w-6 text-right" style={{ color: col }}>
-                  {val}
-                </span>
+                {isEcon && (
+                  <div className="ml-[18px] mt-0.5 text-[9px] font-mono text-lc-textFaint">
+                    {unempLabel} · {m.county}
+                  </div>
+                )}
               </div>
             )
           })}
         </div>
+
+        {/* PFAS penalty row */}
+        {m.pfas.detected && (
+          <div className="flex items-center gap-2 mt-1">
+            <TriangleAlert className="w-2.5 h-2.5 shrink-0 text-red-400" />
+            <span className="text-[10px] text-red-400/70 w-28 shrink-0">PFAS Penalty</span>
+            <div className="flex-1 h-1 bg-red-900/40 rounded-full overflow-hidden">
+              <div className="h-full rounded-full bg-red-500/60" style={{ width: `${m.scores.pfasPenalty}%` }} />
+            </div>
+            <span className="font-mono text-[10px] shrink-0 w-6 text-right text-red-400">
+              -{m.scores.pfasPenalty}
+            </span>
+          </div>
+        )}
 
         {/* Certifications */}
         <div className="mt-2.5 flex flex-wrap gap-1">

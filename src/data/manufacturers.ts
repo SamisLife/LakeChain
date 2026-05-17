@@ -1,4 +1,7 @@
-import { Manufacturer } from '@/types'
+import { Manufacturer, PfasDetection } from '@/types'
+
+const NO_PFAS: PfasDetection = { detected: false, chemicals: [], totalReleaseLbs: 0, warningText: '' }
+const MI_AVG = 4.2
 
 export const manufacturers: Manufacturer[] = [
   {
@@ -17,12 +20,13 @@ export const manufacturers: Manufacturer[] = [
       { name: 'B Corp Certified', body: 'B Lab', type: 'social', year: 2020 },
       { name: 'Recycled Content Standard', body: 'SCS Global Services', type: 'environmental', year: 2020 },
     ],
-    scores: { overall: 94, watershed: 96, economic: 89, transport: 91, certifications: 98 },
+    scores: { overall: 94, watershed: 96, economic: 89, transport: 91, pfasPenalty: 0 },
     employees: 187,
     founded: 1998,
     annualRevenue: '$34M',
     description: '100% post-consumer aluminum recycler with zero liquid discharge facility. Muskegon River monitoring station has recorded zero exceedances since 2019. All process water treated onsite and returned to closed loop.',
     tags: ['metals', 'aluminum', 'recycled', 'castings', 'automotive', 'manufacturing'],
+    pfas: NO_PFAS, countyUnemploymentRate: 5.9, stateAvgUnemployment: MI_AVG,
   },
   {
     id: 'straits-precision-components',
@@ -40,12 +44,13 @@ export const manufacturers: Manufacturer[] = [
       { name: 'AS9100D', body: 'LRQA', type: 'quality', year: 2020 },
       { name: 'B Corp Certified', body: 'B Lab', type: 'social', year: 2022 },
     ],
-    scores: { overall: 91, watershed: 93, economic: 88, transport: 82, certifications: 95 },
+    scores: { overall: 91, watershed: 93, economic: 88, transport: 82, pfasPenalty: 0 },
     employees: 243,
     founded: 2003,
     annualRevenue: '$67M',
     description: 'Northern Michigan precision manufacturer with solar-powered facility and onsite wetland restoration. Winner of the 2023 EGLE Environmental Excellence Award. Facility operates on 94% renewable electricity sourced from local wind cooperative.',
     tags: ['aerospace', 'precision', 'machining', 'titanium', 'hydraulics', 'medical'],
+    pfas: NO_PFAS, countyUnemploymentRate: 3.5, stateAvgUnemployment: MI_AVG,
   },
   {
     id: 'traverse-bay-timber',
@@ -62,12 +67,13 @@ export const manufacturers: Manufacturer[] = [
       { name: 'EGLE Environmental Excellence', body: 'Michigan EGLE', type: 'environmental', year: 2022 },
       { name: 'B Corp Certified', body: 'B Lab', type: 'social', year: 2019 },
     ],
-    scores: { overall: 89, watershed: 91, economic: 94, transport: 86, certifications: 88 },
+    scores: { overall: 89, watershed: 91, economic: 94, transport: 86, pfasPenalty: 0 },
     employees: 312,
     founded: 1987,
     annualRevenue: '$89M',
     description: 'Family-owned FSC certified timber operation with 40-year selective harvest rotation. The Boardman River restoration program has re-established 12 miles of native riparian habitat in partnership with Trout Unlimited Michigan.',
     tags: ['timber', 'lumber', 'FSC', 'CLT', 'construction', 'engineered-wood'],
+    pfas: NO_PFAS, countyUnemploymentRate: 3.4, stateAvgUnemployment: MI_AVG,
   },
   {
     id: 'ann-arbor-biofab',
@@ -85,12 +91,13 @@ export const manufacturers: Manufacturer[] = [
       { name: 'B Corp Certified', body: 'B Lab', type: 'social', year: 2021 },
       { name: 'Cradle to Cradle Gold', body: 'MBDC', type: 'environmental', year: 2022 },
     ],
-    scores: { overall: 88, watershed: 87, economic: 83, transport: 90, certifications: 94 },
+    scores: { overall: 88, watershed: 87, economic: 83, transport: 90, pfasPenalty: 0 },
     employees: 78,
     founded: 2015,
     annualRevenue: '$12M',
     description: 'University of Michigan spinout specializing in fully biodegradable industrial materials. All production waste composted onsite; facility operates on 100% renewable energy. Huron River Watershed Council partner since 2018.',
     tags: ['biocomposites', 'bioplastics', 'packaging', 'sustainable', 'R&D', 'mycelium'],
+    pfas: NO_PFAS, countyUnemploymentRate: 2.9, stateAvgUnemployment: MI_AVG,
   },
   {
     id: 'wolverine-industrial-filtration',
@@ -107,12 +114,13 @@ export const manufacturers: Manufacturer[] = [
       { name: 'ISO 9001:2015', body: 'NSF International', type: 'quality', year: 2015 },
       { name: 'EGLE Environmental Excellence', body: 'Michigan EGLE', type: 'environmental', year: 2020 },
     ],
-    scores: { overall: 85, watershed: 88, economic: 87, transport: 82, certifications: 82 },
+    scores: { overall: 85, watershed: 88, economic: 87, transport: 82, pfasPenalty: 0 },
     employees: 445,
     founded: 1975,
     annualRevenue: '$127M',
     description: 'Fourth-generation manufacturer of industrial filtration systems, including the Grand River Stormwater Recovery system deployed by the City of Grand Rapids. ISO 14001 certified since 2017. 78% of raw materials sourced within 150 miles.',
     tags: ['filtration', 'water', 'HVAC', 'municipal', 'industrial', 'stormwater'],
+    pfas: NO_PFAS, countyUnemploymentRate: 3.4, stateAvgUnemployment: MI_AVG,
   },
   {
     id: 'sault-advanced-polymers',
@@ -128,12 +136,13 @@ export const manufacturers: Manufacturer[] = [
       { name: 'ISO 14001:2015', body: 'TÜV Rheinland', type: 'environmental', year: 2019 },
       { name: 'EGLE Environmental Excellence', body: 'Michigan EGLE', type: 'environmental', year: 2021 },
     ],
-    scores: { overall: 83, watershed: 79, economic: 91, transport: 75, certifications: 80 },
+    scores: { overall: 83, watershed: 79, economic: 91, transport: 75, pfasPenalty: 0 },
     employees: 156,
     founded: 2001,
     annualRevenue: '$41M',
     description: 'Specialty polymer manufacturer on the St. Marys River corridor, serving the Great Lakes shipping industry. Completed a $4.2M wastewater treatment upgrade in 2022. St. Marys River Binational Public Advisory Committee member.',
     tags: ['polymers', 'coatings', 'adhesives', 'marine', 'specialty-chemicals'],
+    pfas: NO_PFAS, countyUnemploymentRate: 5.4, stateAvgUnemployment: MI_AVG,
   },
   {
     id: 'flint-dynamics-electronics',
@@ -149,12 +158,13 @@ export const manufacturers: Manufacturer[] = [
       { name: 'ISO 14001:2015', body: 'Intertek', type: 'environmental', year: 2021 },
       { name: 'ISO 9001:2015', body: 'Intertek', type: 'quality', year: 2018 },
     ],
-    scores: { overall: 76, watershed: 68, economic: 92, transport: 79, certifications: 72 },
+    scores: { overall: 76, watershed: 68, economic: 92, transport: 79, pfasPenalty: 0 },
     employees: 678,
     founded: 1994,
     annualRevenue: '$203M',
     description: 'Post-crisis economic anchor of the Flint region, employing 678 local workers. Launched the Flint River Remediation Partnership with Kettering University in 2021. ISO 14001 certification completed 2021; EGLE application pending.',
     tags: ['electronics', 'automotive', 'sensors', 'EV', 'battery', 'ADAS'],
+    pfas: NO_PFAS, countyUnemploymentRate: 7.8, stateAvgUnemployment: MI_AVG,
   },
   {
     id: 'detroit-river-composites',
@@ -170,12 +180,13 @@ export const manufacturers: Manufacturer[] = [
       { name: 'ISO 14001:2015', body: 'BSI Group', type: 'environmental', year: 2020 },
       { name: 'ISO 9001:2015', body: 'BSI Group', type: 'quality', year: 2018 },
     ],
-    scores: { overall: 71, watershed: 62, economic: 88, transport: 73, certifications: 68 },
+    scores: { overall: 71, watershed: 62, economic: 88, transport: 73, pfasPenalty: 0 },
     employees: 892,
     founded: 1969,
     annualRevenue: '$314M',
     description: 'Legacy Detroit manufacturer transitioning to composite materials. Detroit River International Wildlife Refuge adjacency requires elevated environmental scrutiny. Current EGLE air quality variance expires Q3 2025; upgrade underway.',
     tags: ['composites', 'carbon-fiber', 'automotive', 'structural', 'legacy'],
+    pfas: NO_PFAS, countyUnemploymentRate: 5.5, stateAvgUnemployment: MI_AVG,
   },
 ]
 

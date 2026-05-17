@@ -108,8 +108,8 @@ export default function ScenarioBar({ onApply, activeText }: Props) {
           <button
             key={s.label}
             onClick={() => {
-              setValue(s.text)
-              if (!s.text) { onApply(''); setValue('') }
+              if (!s.text) { onApply(''); setValue(''); return }
+              handleSubmit(s.text)
             }}
             className={`shrink-0 text-[10px] font-mono px-2 py-0.5 rounded border transition-all ${
               s.label === 'Reset'

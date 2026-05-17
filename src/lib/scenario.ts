@@ -34,11 +34,19 @@ export function parseScenario(text: string): ScenarioState['filters'] {
   if (lower.includes('st. marys') || lower.includes('st marys')) zones.push('st-marys-river')
   if (zones.length) filters.watershedZones = zones
 
-  // Score filter: "score above X" or "top tier"
-  const scoreMatch = lower.match(/score\s+(?:above|over|>\s*)(\d+)/)
+  // Score filter — handle many natural phrasings
+  const scoreMatch =
+    lower.match(/scores?\s+(?:above|over|>=?\s*|at\s+least\s+)(\d+)/) ??
+    lower.match(/(?:above|over|minimum|min|at\s+least)\s+(?:scores?\s+)?(\d+)/) ??
+    lower.match(/(\d+)\s*(?:\+|or\s+(?:above|higher|more))/)
   if (scoreMatch) filters.minScore = parseInt(scoreMatch[1])
   if (lower.includes('top tier') || lower.includes('exemplary')) filters.minScore = 90
   if (lower.includes('certified only') || lower.includes('only certified')) filters.minScore = 80
+
+  // PFAS exclusion
+  if (lower.includes('pfas') || lower.includes('forever chemical') || lower.includes('hide pfas') || lower.includes('exclude pfas') || lower.includes('no pfas')) {
+    filters.hidePfas = true
+  }
 
   // Tag filters
   const tagMap: Record<string, string> = {
@@ -90,15 +98,17 @@ export function applyScenario(
       if (!hasTag) return false
     }
 
+    if (filters.hidePfas && m.pfas?.detected) return false
+
     return true
   })
 }
 
 export const QUICK_SCENARIOS = [
+  { label: 'No PFAS', text: 'Hide PFAS facilities' },
   { label: 'Within 150mi of Detroit', text: 'Show only suppliers within 150 miles of Detroit' },
   { label: 'EGLE Certified Only', text: 'Filter to EGLE-compliant manufacturers' },
   { label: 'Lake Michigan Basin', text: 'Show Lake Michigan basin suppliers only' },
   { label: 'Score ≥ 85', text: 'Score above 85 only' },
-  { label: 'B Corp + ISO 14001', text: 'B Corp and ISO 14001 certified only' },
   { label: 'Reset', text: '' },
 ]
