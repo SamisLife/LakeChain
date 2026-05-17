@@ -176,6 +176,7 @@ export default function Dashboard({ manufacturers, state, onStateChange }: Props
                 activeId={state.activeManufacturerId}
                 onSelect={handleSelect}
                 buyerCity={state.buyerCity}
+                query={state.query}
               />
             </div>
           )}
