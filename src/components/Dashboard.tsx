@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import { motion } from 'framer-motion'
 import { Filter, RefreshCw, Layers, Map, GitBranch, TriangleAlert } from 'lucide-react'
@@ -24,6 +24,13 @@ export default function Dashboard({ manufacturers, state, onStateChange }: Props
   const [rightPanel, setRightPanel] = useState<RightPanel>('split')
   const [scenario, setScenario] = useState<ScenarioState>({ text: '', filters: {} })
   const [hidePfas, setHidePfas] = useState(false)
+  const listRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!state.activeManufacturerId) return
+    const el = listRef.current?.querySelector<HTMLElement>(`[data-mfr-id="${state.activeManufacturerId}"]`)
+    el?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  }, [state.activeManufacturerId])
 
   const pfasCount = useMemo(() => manufacturers.filter(m => m.pfas?.detected).length, [manufacturers])
 
@@ -124,16 +131,17 @@ export default function Dashboard({ manufacturers, state, onStateChange }: Props
             <span className="font-mono text-[10px] text-lc-green">{filtered.length}</span>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-2 space-y-2" style={{ willChange: 'transform' }}>
+          <div ref={listRef} className="flex-1 overflow-y-auto p-2 space-y-2" style={{ willChange: 'transform' }}>
             {filtered.map((m, i) => (
-              <ManufacturerCard
-                key={m.id}
-                manufacturer={m}
-                rank={i + 1}
-                isActive={m.id === state.activeManufacturerId}
-                onSelect={handleSelect}
-                index={i}
-              />
+              <div key={m.id} data-mfr-id={m.id}>
+                <ManufacturerCard
+                  manufacturer={m}
+                  rank={i + 1}
+                  isActive={m.id === state.activeManufacturerId}
+                  onSelect={handleSelect}
+                  index={i}
+                />
+              </div>
             ))}
             {filtered.length === 0 && (
               <div className="text-center py-12 text-lc-textFaint text-xs font-mono">

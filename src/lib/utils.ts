@@ -7,8 +7,8 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function scoreColor(score: number): string {
-  if (score >= 85) return '#00d97e'
-  if (score >= 70) return '#f59e0b'
+  if (score >= 75) return '#00d97e'
+  if (score >= 60) return '#f59e0b'
   return '#ef4444'
 }
 
